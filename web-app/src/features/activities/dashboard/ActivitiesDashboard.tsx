@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Grid } from "semantic-ui-react";
+import LoadingComponent from "../../../app/layout/LoadingComponent";
 import { Activity } from "../../../app/models/Activity";
 import ActivityDetails from "../details/ActivityDetails";
 import ActivityForm from "../form/ActivityForm";
@@ -13,6 +14,9 @@ interface Props {
   cancelCurrentActivityHandler: () => void;
   handleFormOpen: (id: string) => void;
   handleFormClose: () => void;
+  handleDeleteActivity: (id: string) => void;
+  handleCreatOrEditActivity: (activity: Activity) => void;
+  submitting: boolean;
 }
 
 const ActivityDashboard = ({
@@ -23,6 +27,9 @@ const ActivityDashboard = ({
   cancelCurrentActivityHandler,
   handleFormOpen,
   handleFormClose,
+  handleDeleteActivity,
+  handleCreatOrEditActivity,
+  submitting,
 }: Props) => {
   return (
     <Grid>
@@ -30,6 +37,8 @@ const ActivityDashboard = ({
         <ActivityList
           activities={activities}
           currentActivityHandler={currentActivityHandler}
+          handleDeleteActivity={handleDeleteActivity}
+          submitting={submitting}
         />
       </Grid.Column>
       <Grid.Column width="6">
@@ -44,6 +53,8 @@ const ActivityDashboard = ({
           <ActivityForm
             currentActivity={currentActivity}
             handleFormClose={handleFormClose}
+            handleCreatOrEditActivity={handleCreatOrEditActivity}
+            submitting={submitting}
           />
         ) : null}
       </Grid.Column>

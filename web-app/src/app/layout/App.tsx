@@ -1,25 +1,27 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { v4 as uuid } from "uuid";
 import { Container } from "semantic-ui-react";
 import ActivityDashboard from "../../features/activities/dashboard/ActivitiesDashboard";
 import { Activity } from "../models/Activity";
 import Navbar from "./Navbar";
 import "./styles.css";
+import API_AGENT from "../api/api_agent";
+import LoadingComponent from "./LoadingComponent";
+import { v4 as uuid } from "uuid";
 
 function App() {
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [isLoadingApp, setisLoadingApp] = useState(true);
   const [editMode, setEditMode] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [currentActivity, setCurrentActivity] = useState<Activity | undefined>(
     undefined
   );
 
   useEffect(() => {
     async function activityFetch() {
-      var response = await axios.get<Activity[]>(
-        "https://localhost:5001/api/activities"
-      );
-      setActivities(response.data);
+      var response = await API_AGENT.Activities.list();
+      setActivities(response);
+      setisLoadingApp(false);
     }
     activityFetch();
   }, []);
@@ -41,6 +43,37 @@ function App() {
     setEditMode(false);
   }
 
+  async function handleCreatOrEditActivity(activity: Activity) {
+    setSubmitting(true);
+
+    if (activity.id !== "") {
+      await API_AGENT.Activities.edit(activity);
+      setActivities([
+        ...activities.filter((a) => a.id !== activity.id),
+        activity,
+      ]);
+      setCurrentActivity(activity);
+      setEditMode(false);
+      setSubmitting(false);
+    } else {
+      activity.id = uuid();
+      await API_AGENT.Activities.create(activity);
+      setActivities([...activities, activity]);
+      setCurrentActivity(activity);
+      setEditMode(false);
+      setSubmitting(false);
+    }
+  }
+
+  async function handleDeleteActivity(id: string) {
+    setSubmitting(true);
+    await API_AGENT.Activities.delete(id);
+    setActivities([...activities.filter((a) => a.id !== id)]);
+    setSubmitting(false);
+  }
+
+  if (isLoadingApp) return <LoadingComponent />;
+
   return (
     <div className="App-container">
       <Navbar handleFormOpen={handleFormOpen} />
@@ -53,6 +86,9 @@ function App() {
           cancelCurrentActivityHandler={cancelCurrentActivityHandler}
           handleFormOpen={handleFormOpen}
           handleFormClose={handleFormClose}
+          handleDeleteActivity={handleDeleteActivity}
+          handleCreatOrEditActivity={handleCreatOrEditActivity}
+          submitting={submitting}
         />
       </Container>
     </div>

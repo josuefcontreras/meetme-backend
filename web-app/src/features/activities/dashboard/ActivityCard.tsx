@@ -1,14 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Item, Label } from "semantic-ui-react";
 import { Activity } from "../../../app/models/Activity";
 
 interface Props {
   activity: Activity;
   currentActivityHandler: (id: string) => void;
+  handleDeleteActivity: (id: string) => void;
+  submitting: boolean;
 }
 
-const ActivityCard = ({ activity, currentActivityHandler }: Props) => {
-  let { id, title, date, description, city, venue, category } = activity;
+const ActivityCard = ({
+  activity,
+  currentActivityHandler,
+  handleDeleteActivity,
+  submitting,
+}: Props) => {
+  const { id, title, date, description, city, venue, category } = activity;
+  const [target, setTarget] = useState("");
+
+  function handleDeleteButtonClick(
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    id: string
+  ) {
+    setTarget(e.currentTarget.name);
+    handleDeleteActivity(id);
+  }
+
   return (
     <Item>
       <Item.Content>
@@ -30,12 +47,14 @@ const ActivityCard = ({ activity, currentActivityHandler }: Props) => {
             }}
           />
           <Button
+            name={id}
             floated="right"
             content="Delete"
             color="red"
-            onClick={() => {
-              console.log("Deleting...");
+            onClick={(e) => {
+              handleDeleteButtonClick(e, id);
             }}
+            loading={target === id ? submitting : false}
           />
           <Label basic content={category} />
         </Item.Extra>

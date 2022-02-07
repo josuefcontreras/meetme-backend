@@ -5,9 +5,16 @@ import { Activity } from "../../../app/models/Activity";
 interface Props {
   currentActivity: Activity | undefined;
   handleFormClose: () => void;
+  handleCreatOrEditActivity: (activity: Activity) => void;
+  submitting: boolean;
 }
 
-const ActivityForm = ({ currentActivity, handleFormClose }: Props) => {
+const ActivityForm = ({
+  currentActivity,
+  handleFormClose,
+  handleCreatOrEditActivity,
+  submitting,
+}: Props) => {
   const initialFormState =
     currentActivity ??
     ({
@@ -23,7 +30,7 @@ const ActivityForm = ({ currentActivity, handleFormClose }: Props) => {
   const [activity, setActivity] = useState(initialFormState);
 
   function handelSubmit() {
-    console.log(activity);
+    handleCreatOrEditActivity(activity);
   }
 
   function handleInputChange({
@@ -61,9 +68,10 @@ const ActivityForm = ({ currentActivity, handleFormClose }: Props) => {
           }}
         />
         <Form.Input
+          type="date"
           placeholder="Date"
           name="date"
-          value={activity.date}
+          value={activity.date.split("T")[0]}
           onChange={(e) => {
             handleInputChange(e);
           }}
@@ -84,10 +92,15 @@ const ActivityForm = ({ currentActivity, handleFormClose }: Props) => {
             handleInputChange(e);
           }}
         />
-        <Button floated="right" positive type="submit" content="Submit" />
         <Button
           floated="right"
+          positive
           type="submit"
+          content="Submit"
+          loading={submitting}
+        />
+        <Button
+          floated="right"
           content="Cancel"
           onClick={() => {
             handleFormClose();

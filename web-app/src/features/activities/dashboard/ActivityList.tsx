@@ -6,9 +6,16 @@ import ActivityCard from "./ActivityCard";
 interface Props {
   activities: Activity[];
   currentActivityHandler: (id: string) => void;
+  handleDeleteActivity: (id: string) => void;
+  submitting: boolean;
 }
 
-const ActivityList = ({ activities, currentActivityHandler }: Props) => {
+const ActivityList = ({
+  activities,
+  currentActivityHandler,
+  handleDeleteActivity,
+  submitting,
+}: Props) => {
   let list = (
     <Segment>
       <Item.Group divided>
@@ -17,6 +24,8 @@ const ActivityList = ({ activities, currentActivityHandler }: Props) => {
             activity={a}
             key={a.id}
             currentActivityHandler={currentActivityHandler}
+            handleDeleteActivity={handleDeleteActivity}
+            submitting={submitting}
           />
         ))}
       </Item.Group>
