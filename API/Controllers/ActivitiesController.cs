@@ -1,6 +1,5 @@
 ﻿using Application.Activities;
 using Domain;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -12,7 +11,6 @@ namespace API.Controllers
 
         // GET: api/<ActivitiesController>
         [HttpGet]
-
         public async Task<ActionResult<List<Activity>>> GetActivities()
         {
             var request = new List.Query();
@@ -23,8 +21,7 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Activity>> GetActivity(Guid id)
         {
-            var request = new Details.Query();
-            request.Id = id;
+            var request = new Details.Query() { Id = id};
             return await Mediator.Send(request);
         }
 
@@ -32,8 +29,7 @@ namespace API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateActivity(Activity activity)
         {
-            var command = new Create.Command();
-            command.Activity = activity;
+            var command = new Create.Command { Activity = activity };
             return Ok(await Mediator.Send(command));
         }
 
@@ -42,8 +38,7 @@ namespace API.Controllers
         public async Task<IActionResult> EditActivity(Guid id, Activity activity)
         {
             activity.Id = id;
-            var command = new Edit.Command();
-            command.Activity = activity;
+            var command = new Edit.Command() { Activity = activity };
             return Ok(await Mediator.Send(command));
         }
 
@@ -51,8 +46,7 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteActivity(Guid id)
         {
-            var command = new Delete.Command();
-            command.Id = id;
+            var command = new Delete.Command() { Id = id };
             return Ok(await Mediator.Send(command));
         }
 
