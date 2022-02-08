@@ -1,20 +1,18 @@
+import { observer } from "mobx-react-lite";
 import React, { ChangeEvent, useState } from "react";
 import { Button, Form, Segment } from "semantic-ui-react";
 import { Activity } from "../../../app/models/Activity";
+import { useStore } from "../../../app/stores/storer";
 
-interface Props {
-  currentActivity: Activity | undefined;
-  handleFormClose: () => void;
-  handleCreatOrEditActivity: (activity: Activity) => void;
-  submitting: boolean;
-}
-
-const ActivityForm = ({
-  currentActivity,
-  handleFormClose,
-  handleCreatOrEditActivity,
-  submitting,
-}: Props) => {
+const ActivityForm = () => {
+  const { activityStore } = useStore();
+  const {
+    currentActivity,
+    isSubmitting,
+    createActivity,
+    editActivity,
+    closeForm,
+  } = activityStore;
   const initialFormState =
     currentActivity ??
     ({
@@ -29,8 +27,9 @@ const ActivityForm = ({
 
   const [activity, setActivity] = useState(initialFormState);
 
-  function handelSubmit() {
-    handleCreatOrEditActivity(activity);
+  function handelSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    activity.id === "" ? createActivity(activity) : editActivity(activity);
   }
 
   function handleInputChange({
@@ -42,7 +41,11 @@ const ActivityForm = ({
 
   return (
     <Segment clearing>
-      <Form onSubmit={handelSubmit}>
+      <Form
+        onSubmit={(e) => {
+          handelSubmit(e);
+        }}
+      >
         <Form.Input
           placeholder="Title"
           name="title"
@@ -97,13 +100,13 @@ const ActivityForm = ({
           positive
           type="submit"
           content="Submit"
-          loading={submitting}
+          loading={isSubmitting}
         />
         <Button
           floated="right"
           content="Cancel"
           onClick={() => {
-            handleFormClose();
+            closeForm();
           }}
         />
       </Form>
@@ -111,4 +114,4 @@ const ActivityForm = ({
   );
 };
 
-export default ActivityForm;
+export default observer(ActivityForm);

@@ -1,3 +1,4 @@
+import { observer } from "mobx-react-lite";
 import React from "react";
 import { Item, Segment } from "semantic-ui-react";
 import { Activity } from "../../../app/models/Activity";
@@ -5,28 +6,14 @@ import ActivityCard from "./ActivityCard";
 
 interface Props {
   activities: Activity[];
-  currentActivityHandler: (id: string) => void;
-  handleDeleteActivity: (id: string) => void;
-  submitting: boolean;
 }
 
-const ActivityList = ({
-  activities,
-  currentActivityHandler,
-  handleDeleteActivity,
-  submitting,
-}: Props) => {
+const ActivityList = ({ activities }: Props) => {
   let list = (
     <Segment>
       <Item.Group divided>
         {activities.map((a) => (
-          <ActivityCard
-            activity={a}
-            key={a.id}
-            currentActivityHandler={currentActivityHandler}
-            handleDeleteActivity={handleDeleteActivity}
-            submitting={submitting}
-          />
+          <ActivityCard activity={a} key={a.id} />
         ))}
       </Item.Group>
     </Segment>
@@ -35,4 +22,4 @@ const ActivityList = ({
   return list;
 };
 
-export default ActivityList;
+export default observer(ActivityList);

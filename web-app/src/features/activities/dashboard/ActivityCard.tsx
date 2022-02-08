@@ -1,29 +1,25 @@
+import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
 import { Button, Item, Label } from "semantic-ui-react";
 import { Activity } from "../../../app/models/Activity";
+import { useStore } from "../../../app/stores/storer";
 
 interface Props {
   activity: Activity;
-  currentActivityHandler: (id: string) => void;
-  handleDeleteActivity: (id: string) => void;
-  submitting: boolean;
 }
 
-const ActivityCard = ({
-  activity,
-  currentActivityHandler,
-  handleDeleteActivity,
-  submitting,
-}: Props) => {
+const ActivityCard = ({ activity }: Props) => {
   const { id, title, date, description, city, venue, category } = activity;
   const [target, setTarget] = useState("");
+  const { activityStore } = useStore();
+  const { selectActivity, deleteActivity, isSubmitting } = activityStore;
 
   function handleDeleteButtonClick(
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
     id: string
   ) {
     setTarget(e.currentTarget.name);
-    handleDeleteActivity(id);
+    deleteActivity(id);
   }
 
   return (
@@ -43,7 +39,7 @@ const ActivityCard = ({
             content="View"
             color="blue"
             onClick={() => {
-              currentActivityHandler(id);
+              selectActivity(id);
             }}
           />
           <Button
@@ -54,7 +50,7 @@ const ActivityCard = ({
             onClick={(e) => {
               handleDeleteButtonClick(e, id);
             }}
-            loading={target === id ? submitting : false}
+            loading={target === id ? isSubmitting : false}
           />
           <Label basic content={category} />
         </Item.Extra>
@@ -63,4 +59,4 @@ const ActivityCard = ({
   );
 };
 
-export default ActivityCard;
+export default observer(ActivityCard);
