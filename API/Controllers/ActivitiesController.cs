@@ -1,5 +1,6 @@
 ﻿using Application.Activities;
 using Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -11,18 +12,20 @@ namespace API.Controllers
 
         // GET: api/<ActivitiesController>
         [HttpGet]
-        public async Task<ActionResult<List<Activity>>> GetActivities()
+        public async Task<IActionResult> GetActivities()
         {
             var request = new List.Query();
-            return await Mediator.Send(request); 
+            var result = await Mediator.Send(request);
+            return HandleResult(result);
         }
-
+            
         // GET api/<ActivitiesController>/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Activity>> GetActivity(Guid id)
+        public async Task<IActionResult> GetActivity(Guid id)
         {
             var request = new Details.Query() { Id = id};
-            return await Mediator.Send(request);
+            var result = await Mediator.Send(request);
+            return HandleResult(result);
         }
 
         // POST api/<ActivitiesController>
@@ -30,7 +33,8 @@ namespace API.Controllers
         public async Task<IActionResult> CreateActivity(Activity activity)
         {
             var command = new Create.Command { Activity = activity };
-            return Ok(await Mediator.Send(command));
+            var result = await Mediator.Send(command);
+            return HandleResult(result);
         }
 
         // PUT api/<ActivitiesController>/5
@@ -39,7 +43,8 @@ namespace API.Controllers
         {
             activity.Id = id;
             var command = new Edit.Command() { Activity = activity };
-            return Ok(await Mediator.Send(command));
+            var result = await Mediator.Send(command);
+            return HandleResult(result);
         }
 
         // DELETE api/<ActivitiesController>/5
@@ -47,7 +52,8 @@ namespace API.Controllers
         public async Task<IActionResult> DeleteActivity(Guid id)
         {
             var command = new Delete.Command() { Id = id };
-            return Ok(await Mediator.Send(command));
+            var result = await Mediator.Send(command);
+            return HandleResult(result);
         }
 
     }
