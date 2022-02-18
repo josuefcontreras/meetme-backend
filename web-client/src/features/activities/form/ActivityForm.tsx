@@ -8,7 +8,7 @@ import { v4 as uuid } from "uuid";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { MyDateInput, MySelectInput, MyTextArea, MyTextInput } from "../../../app/common/form";
-import { categoryOptions } from "../../../app/common/form/options/categoryOptions";
+import { categoryOptions } from "../../../app/common/options/categoryOptions";
 import { Activity } from "../../../app/models/activity";
 
 export default observer(function ActivityForm() {

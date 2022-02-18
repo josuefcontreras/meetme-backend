@@ -2,6 +2,9 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "react-toastify";
 import { history } from "../..";
 import { Activity } from "../models/activity";
+import { LoginCredentials } from "../models/loginCredentials";
+import { RegistrationFormValues } from "../models/registrationFormValues";
+import { User } from "../models/user";
 import { store } from "../stores/store";
 
 const sleep = (delay: number) => {
@@ -11,10 +14,9 @@ const sleep = (delay: number) => {
 };
 
 axios.defaults.baseURL = "https://localhost:5001/api";
-
 axios.interceptors.response.use(
   async (response) => {
-    await sleep(2000);
+    await sleep(1000);
     return response;
   },
   (error: AxiosError) => {
@@ -51,6 +53,11 @@ axios.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+axios.interceptors.request.use(function (config) {
+  const token = window.localStorage.getItem("jwt");
+  config.headers.Authorization = token ? `Bearer ${token}` : "";
+  return config;
+});
 
 const responseBody = <T>(response: AxiosResponse<T>) => response.data;
 
@@ -69,8 +76,15 @@ const Activities = {
   delete: (id: string) => axios.delete<void>(`/activities/${id}`),
 };
 
+const Account = {
+  getCurrentUser: () => requests.get<User>("/account"),
+  login: (credentials: LoginCredentials) => requests.post<User>("/account/login", credentials),
+  register: (values: RegistrationFormValues) => requests.post<User>("/account/register", values),
+};
+
 const agent = {
   Activities,
+  Account,
 };
 
 export default agent;
