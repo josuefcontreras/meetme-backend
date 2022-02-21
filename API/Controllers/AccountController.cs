@@ -35,13 +35,7 @@ namespace API.Controllers
 
             if (result.Succeeded)
             {
-                return new UserDTO
-                {
-                    DisplayName = user.DisplayName,
-                    Image = "image",
-                    Token = _tokenService.createToken(user),
-                    UserName = user.UserName
-                };
+                return Ok(CreateUserDTO(user));
             }
 
             return Unauthorized();
@@ -54,20 +48,22 @@ namespace API.Controllers
         {
             if(await _userManager.Users.AnyAsync(user => user.Email == registerDTO.Email))
             {
-                return BadRequest("Email taken");
+                ModelState.AddModelError("email", "Email taken");
+                return ValidationProblem(ModelState);
             }
             if (await _userManager.Users.AnyAsync(user => user.UserName == registerDTO.UserName))
             {
-                return BadRequest("Username taken");
+                ModelState.AddModelError("username", "Username taken");
+                return ValidationProblem(ModelState);
             }
             
             var user = new AppUser { 
                 DisplayName = registerDTO.DisplayName, 
                 Email = registerDTO.Email, 
-                UserName = registerDTO.UserName 
+                UserName = registerDTO.UserName
             };
 
-            var result = await _userManager.CreateAsync(user);
+            var result = await _userManager.CreateAsync(user, registerDTO.Password);
 
             if (result.Succeeded) return Ok(CreateUserDTO(user));
 
@@ -86,7 +82,7 @@ namespace API.Controllers
             var userDTO = new UserDTO()
             {
                 DisplayName = user.DisplayName,
-                Image = "image",
+                Image = "user.png",
                 Token = _tokenService.createToken(user),
                 UserName = user.UserName
             };

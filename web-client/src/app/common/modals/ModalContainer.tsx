@@ -10,7 +10,7 @@ interface Props {
 
 const ModalContainer = ({ size, dimmer }: Props) => {
   const { modalStore } = useStore();
-  const { openModal, closeModal, modal } = modalStore;
+  const { closeModal, modal } = modalStore;
 
   const container = (
     <Modal dimmer={dimmer} size={size} closeIcon open={modal.open} onClose={() => closeModal()}>

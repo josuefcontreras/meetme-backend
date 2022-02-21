@@ -7,8 +7,10 @@ using API.Middleware;
 using API.Services;
 using Application.Activities;
 using Application.Core;
+using Application.Interfaces;
 using Domain;
 using FluentValidation.AspNetCore;
+using Infrastructure.Security;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -57,7 +59,17 @@ namespace API
                     ValidateAudience = false,
                 };
             });
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsActivityHost", policy =>
+                {
+                    policy.Requirements.Add(new IsHostRequirement());
+                });
+            });
+            services.AddTransient<IAuthorizationHandler, IsHostRequirementHandler>();  
+
             services.AddScoped<TokenService>();
+            services.AddScoped<IUserAccessor, UserAccessor>();
             services.AddControllers(options =>
             {
                 var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
