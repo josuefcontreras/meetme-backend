@@ -1,7 +1,9 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import agent from "../api/agent";
-import { Activity } from "../models/activity";
+import { Activity, ActivityFormValues } from "../models/activity";
 import { format } from "date-fns";
+import { store } from "./store";
+import { Profile } from "../models/profile";
 
 export default class ActivityStore {
   activityRegistry = new Map<string, Activity>();
@@ -67,6 +69,15 @@ export default class ActivityStore {
   };
 
   private setActivity = (activity: Activity) => {
+    const { userStore } = store;
+    const { user } = userStore;
+
+    if (user) {
+      activity.isGoing = activity.attendees?.some((att) => att.userName === user.userName);
+      activity.isHost = activity.hostUserName === user.userName;
+      activity.host = activity.attendees?.find((att) => att.userName === activity.hostUserName);
+    }
+
     activity.date = new Date(activity.date!);
     this.activityRegistry.set(activity.id, activity);
   };
@@ -79,14 +90,20 @@ export default class ActivityStore {
     this.loadingInitial = state;
   };
 
-  createActivity = async (activity: Activity) => {
+  createActivity = async (activity: ActivityFormValues) => {
     this.loading = true;
+    const { user } = store.userStore;
+    const attendee = new Profile(user!);
+
     try {
       await agent.Activities.create(activity);
+      const newActivity = new Activity(activity);
+      newActivity.hostUserName = user!.userName;
+      newActivity.attendees = [attendee];
+      this.setActivity(newActivity);
+
       runInAction(() => {
-        this.activityRegistry.set(activity.id, activity);
-        this.selectedActivity = activity;
-        this.editMode = false;
+        this.selectedActivity = newActivity;
         this.loading = false;
       });
     } catch (error) {
@@ -97,15 +114,17 @@ export default class ActivityStore {
     }
   };
 
-  updateActivity = async (activity: Activity) => {
+  updateActivity = async (activity: ActivityFormValues) => {
     this.loading = true;
     try {
       await agent.Activities.update(activity);
       runInAction(() => {
-        this.activityRegistry.set(activity.id, activity);
-        this.selectedActivity = activity;
-        this.editMode = false;
-        this.loading = false;
+        if (activity.id) {
+          const updatedActivity = { ...this.getActivity(activity.id), ...activity } as Activity;
+          this.activityRegistry.set(activity.id, updatedActivity);
+          this.selectedActivity = updatedActivity;
+          this.loading = false;
+        }
       });
     } catch (error) {
       console.log(error);
@@ -125,6 +144,56 @@ export default class ActivityStore {
       });
     } catch (error) {
       console.log(error);
+      runInAction(() => {
+        this.loading = false;
+      });
+    }
+  };
+
+  updateAttendance = async () => {
+    const { user } = store.userStore;
+    runInAction(() => {
+      this.loading = true;
+    });
+    try {
+      await agent.Activities.attend(this.selectedActivity!.id);
+      runInAction(() => {
+        if (this.selectedActivity?.isHost) {
+          this.selectedActivity.isCancelled = true;
+        }
+
+        if (this.selectedActivity?.isGoing) {
+          this.selectedActivity.attendees = this.selectedActivity.attendees?.filter(
+            (att) => att.userName !== user?.userName
+          );
+          this.selectedActivity.isGoing = false;
+        } else {
+          const attendee = new Profile(user!);
+          this.selectedActivity!.attendees?.push(attendee);
+          this.selectedActivity!.isGoing = true;
+        }
+        this.activityRegistry.set(this.selectedActivity!.id, this.selectedActivity!);
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      runInAction(() => {
+        this.loading = false;
+      });
+    }
+  };
+
+  cancelActivityToggle = async () => {
+    this.loading = true;
+    try {
+      await agent.Activities.attend(this.selectedActivity!.id);
+      runInAction(() => {
+        this.selectedActivity!.isCancelled = !this.selectedActivity!.isCancelled;
+        this.activityRegistry.set(this.selectedActivity!.id, this.selectedActivity!);
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
       runInAction(() => {
         this.loading = false;
       });
