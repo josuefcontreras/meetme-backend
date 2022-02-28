@@ -20,13 +20,19 @@ namespace Application.Core
                 .MapFrom(activity => activity.Attendees
                 .FirstOrDefault(attendee => attendee.IsHost).AppUser.UserName));
 
-            CreateMap<ActivityAttendee, Profiles.Profile>()
-                .ForMember(profile => profile.DisplayName, memberOptions => memberOptions
+            CreateMap<ActivityAttendee, AttendeeDTO>()
+                .ForMember(attendeeDTO => attendeeDTO.DisplayName, memberOptions => memberOptions
                     .MapFrom(attendee => attendee.AppUser.DisplayName))
-                .ForMember(profile => profile.UserName, memberOptions => memberOptions
+                .ForMember(attendeeDTO => attendeeDTO.UserName, memberOptions => memberOptions
                     .MapFrom(attendee => attendee.AppUser.UserName))
-                .ForMember(profile => profile.Bio, memberOptions => memberOptions
-                    .MapFrom(attendee => attendee.AppUser.Bio));
+                .ForMember(attendeeDTO => attendeeDTO.Bio, memberOptions => memberOptions
+                    .MapFrom(attendee => attendee.AppUser.Bio))
+                .ForMember(attendeeDTO => attendeeDTO.Image, memberOptions => memberOptions
+                    .MapFrom(attendee => attendee.AppUser.Photos.FirstOrDefault(photo => photo.IsMain).Url));
+
+            CreateMap<AppUser, Profiles.Profile>()
+                .ForMember(profile => profile.Image, memberOptions  => memberOptions
+                    .MapFrom(appUser => appUser.Photos.FirstOrDefault(photo => photo.IsMain).Url));
         }
 
     }

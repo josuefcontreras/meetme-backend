@@ -10,6 +10,7 @@ using Application.Core;
 using Application.Interfaces;
 using Domain;
 using FluentValidation.AspNetCore;
+using Infrastructure.Photo;
 using Infrastructure.Security;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -70,6 +71,8 @@ namespace API
 
             services.AddScoped<TokenService>();
             services.AddScoped<IUserAccessor, UserAccessor>();
+            services.AddScoped<IPhotoAccessor, PhotoAccessor>();
+            services.Configure<GoogleCloudStorageSettings>(_config.GetSection("GoogleCloudStorage")); 
             services.AddControllers(options =>
             {
                 var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();

@@ -58,7 +58,7 @@ namespace API.Controllers
             return HandleResult(result);
         }
 
-        // POST api/<ActivitiesController>
+        // POST api/<ActivitiesController>/{id}/attend
         [HttpPost("{id}/attend")]
         public async Task<IActionResult> Attend(Guid id)
         {
