@@ -51,7 +51,7 @@ const ActivityDetailedHeader = ({ activity }: Props) => {
                 <p>{format(activity.date!, "dd MMM yyyy")}</p>
                 <p>
                   Hosted by
-                  <Link to={`/profile/${activity.host?.userName}`}>
+                  <Link to={`/profiles/${activity.host?.userName}`}>
                     <strong> {activity.host?.displayName}</strong>
                   </Link>
                 </p>

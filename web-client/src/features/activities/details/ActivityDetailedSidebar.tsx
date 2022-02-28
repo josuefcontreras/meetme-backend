@@ -1,8 +1,8 @@
 import React from "react";
-import { Segment, List, Label, Item, Image } from "semantic-ui-react";
-import { Link } from "react-router-dom";
+import { Segment, List } from "semantic-ui-react";
 import { observer } from "mobx-react-lite";
 import { Activity } from "../../../app/models/activity";
+import ActivityDetailedSidebarItem from "./ActivityDetailedSidebarItem";
 
 interface Props {
   activity: Activity;
@@ -20,26 +20,18 @@ const ActivityDetailedSidebar = ({ activity }: Props) => {
         inverted
         color="teal"
       >
-        {attendees!.length} {attendees!.length === 1 ? "person" : "people"} going
+        {attendees.length} {attendees.length === 1 ? "person" : "people"} going
       </Segment>
       <Segment attached>
         <List relaxed divided>
-          {attendees!.map((attendee) => (
-            <Item key={attendee.userName} style={{ position: "relative" }}>
-              {attendee.userName === host?.userName && (
-                <Label style={{ position: "absolute" }} color="orange" ribbon="right">
-                  Host
-                </Label>
-              )}
-              <Image size="tiny" src={attendee.image || "/assets/user.png"} />
-              <Item.Content verticalAlign="middle">
-                <Item.Header as="h3">
-                  <Link to={`/profile/${attendee.userName}`}>{attendee.displayName}</Link>
-                </Item.Header>
-                <Item.Extra style={{ color: "orange" }}>Following</Item.Extra>
-              </Item.Content>
-            </Item>
-          ))}
+          {attendees.find((a) => a.userName === host?.userName) && (
+            <ActivityDetailedSidebarItem attendee={host!} isHost={true} />
+          )}
+          {attendees
+            .filter((a) => a.userName !== host?.userName)
+            .map((attendee) => (
+              <ActivityDetailedSidebarItem attendee={attendee} isHost={false} />
+            ))}
         </List>
       </Segment>
     </>

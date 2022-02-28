@@ -22,15 +22,16 @@ const NavBar = () => {
         {isLoggedIn && (
           <Menu.Item position="right">
             <Image
-              src={user?.image ? `/assets/${user?.image}` : "/assets/user.png"}
+              src={user?.image || "/assets/user.png"}
               avatar
               spaced="right"
+              alt="profile image"
             />
             <Dropdown pointing="top left" text={user?.displayName}>
               <DropdownMenu>
                 <Dropdown.Item
                   as={Link}
-                  to={`/profile/${user?.userName}`}
+                  to={`/profiles/${user?.userName}`}
                   text="My Profile"
                   icon="user"
                 />
