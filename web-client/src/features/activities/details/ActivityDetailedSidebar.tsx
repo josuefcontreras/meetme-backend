@@ -30,7 +30,11 @@ const ActivityDetailedSidebar = ({ activity }: Props) => {
           {attendees
             .filter((a) => a.userName !== host?.userName)
             .map((attendee) => (
-              <ActivityDetailedSidebarItem attendee={attendee} isHost={false} />
+              <ActivityDetailedSidebarItem
+                key={attendee.userName}
+                attendee={attendee}
+                isHost={false}
+              />
             ))}
         </List>
       </Segment>
