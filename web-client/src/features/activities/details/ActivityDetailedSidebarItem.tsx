@@ -20,9 +20,9 @@ const ActivityDetailedSidebarItem = ({ attendee, isHost }: Props) => {
       <Image size="tiny" src={attendee.image || "/assets/user.png"} />
       <Item.Content verticalAlign="middle">
         <Item.Header as="h3">
-          <Link to={`/profile/${attendee.userName}`}>{attendee.displayName}</Link>
+          <Link to={`/profiles/${attendee.userName}`}>{attendee.displayName}</Link>
         </Item.Header>
-        <Item.Extra style={{ color: "orange" }}>Following</Item.Extra>
+        {attendee.following && <Item.Extra style={{ color: "orange" }}>Following</Item.Extra>}
       </Item.Content>
     </Item>
   );

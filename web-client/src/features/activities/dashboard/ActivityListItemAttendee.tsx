@@ -18,6 +18,8 @@ const ActivityListItemAttendee = ({ attendees }: Props) => {
             circular
             src={attendee.image || "/assets/user.png"}
             alt="profile image"
+            bordered
+            style={attendee.following ? styles.imageStyle : null}
           />
         </List.Item>
       ))}
@@ -25,4 +27,7 @@ const ActivityListItemAttendee = ({ attendees }: Props) => {
   );
 };
 
+const styles = {
+  imageStyle: { borderColor: "orange", borderWidth: 4 },
+};
 export default observer(ActivityListItemAttendee);
