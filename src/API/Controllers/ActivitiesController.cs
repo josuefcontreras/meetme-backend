@@ -17,7 +17,7 @@ namespace API.Controllers
         {
             var request = new List.Query() { PagingParams = pagingParams };
             var result = await Mediator.Send(request);
-            return HandleResult(result);
+            return HandlePagedResult(result);
         }
 
         // GET api/<ActivitiesController>/5

@@ -32,6 +32,7 @@ namespace Application.Activities
                 var currentUser = await _context.Users.FirstOrDefaultAsync(user => user.UserName == currentUserName, cancellationToken);
 
                 var query = _context.Activities
+                    .OrderBy(a => a.Date)
                     .ProjectTo<ActivityDTO>(_mapper.ConfigurationProvider, new { currentUserName = currentUser.UserName });
 
 
