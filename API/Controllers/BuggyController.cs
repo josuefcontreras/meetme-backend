@@ -5,15 +5,15 @@ namespace API.Controllers
     public class BuggyController : BaseApiController
     {
         [HttpGet("not-found")]
-        public ActionResult GetNotFound()
-        { 
+        public ActionResult<int> GetNotFound()
+        {
             return NotFound();
         }
 
         [HttpGet("bad-request")]
         public ActionResult GetBadRequest()
         {
-            return BadRequest("This is a bad request");
+            return BadRequest();
         }
 
         [HttpGet("server-error")]

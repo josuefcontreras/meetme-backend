@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Container } from "semantic-ui-react";
 import NavBar from "./NavBar";
 import ActivityDashboard from "../../features/activities/dashboard/ActivityDashboard";
@@ -16,26 +16,13 @@ import { useStore } from "../stores/store";
 import LoadingComponent from "./LoadingComponent";
 import ModalContainer from "../common/modals/ModalContainer";
 import ProfilePage from "../../features/profiles/ProfilePage";
+import { useInitialLogInAttempt } from "../hooks";
 
 function App() {
   const location = useLocation();
-  const { userStore, commonStore } = useStore();
+  const appLoaded = useInitialLogInAttempt();
 
-  useEffect(() => {
-    async function firstLoginAttempt() {
-      if (commonStore.token) {
-        await userStore.getUser();
-        commonStore.setAppLoaded(true);
-      } else {
-        setTimeout(() => {
-          commonStore.setAppLoaded(true);
-        }, 1000);
-      }
-    }
-    firstLoginAttempt();
-  }, [commonStore, userStore]);
-
-  if (!commonStore.appLoaded) return <LoadingComponent content="Loading App..." />;
+  if (!appLoaded) return <LoadingComponent content="Loading App..." />;
 
   return (
     <>

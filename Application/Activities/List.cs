@@ -1,42 +1,43 @@
-﻿using Application.Core;
+﻿using Application.Common.Interfaces;
+using Application.Common.Models;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Activities
 {
     public class List
     {
-        public class Query : IRequest<Result<List<ActivityDTO>>>
+        public class Query : IRequest<Result<PagedList<ActivityDTO>>>
         {
-
+            public PagingParams PagingParams { get; set; }
         }
-        public class Handler : IRequestHandler<Query, Result<List<ActivityDTO>>>
+        public class Handler : IRequestHandler<Query, Result<PagedList<ActivityDTO>>>
         {
-            private readonly DataContext _context;
+            private readonly IApplicationDbContext _context;
             private readonly IMapper _mapper;
+            private readonly ICurrentUserService _currentUserService;
 
-            public Handler(DataContext context, IMapper mapper)
+            public Handler(IApplicationDbContext context, IMapper mapper, ICurrentUserService currentUserService)
             {
                 _context = context;
                 _mapper = mapper;
+                _currentUserService = currentUserService;
             }
 
-            public async Task<Result<List<ActivityDTO>>> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<Result<PagedList<ActivityDTO>>> Handle(Query request, CancellationToken cancellationToken)
             {
-                var activities = await _context.Activities
-                    .ProjectTo<ActivityDTO>(_mapper.ConfigurationProvider)
-                    .ToListAsync();
+                var currentUserName = _currentUserService.UserId;
+                var currentUser = await _context.Users.FirstOrDefaultAsync(user => user.UserName == currentUserName, cancellationToken);
 
-                return Result<List<ActivityDTO>>.Success(activities);
+                var query = _context.Activities
+                    .ProjectTo<ActivityDTO>(_mapper.ConfigurationProvider, new { currentUserName = currentUser.UserName });
+
+
+                var activities = await PagedList<ActivityDTO>.CreateAsync(query, request.PagingParams.PageNumber, request.PagingParams.Pagesize);
+
+                return Result<PagedList<ActivityDTO>>.Success(activities);
             }
         }
     }

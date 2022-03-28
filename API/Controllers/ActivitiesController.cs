@@ -1,4 +1,5 @@
 ﻿using Application.Activities;
+using Application.Common.Models;
 using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,9 +13,9 @@ namespace API.Controllers
 
         // GET: api/<ActivitiesController>
         [HttpGet]
-        public async Task<IActionResult> GetActivities()
+        public async Task<IActionResult> GetActivities([FromQuery] PagingParams pagingParams)
         {
-            var request = new List.Query();
+            var request = new List.Query() { PagingParams = pagingParams };
             var result = await Mediator.Send(request);
             return HandleResult(result);
         }
@@ -66,8 +67,5 @@ namespace API.Controllers
             var result = await Mediator.Send(command);
             return HandleResult(result);
         }
-
-
-
     }
 }

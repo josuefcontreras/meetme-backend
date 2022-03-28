@@ -1,14 +1,8 @@
-﻿using Application.Core;
-using Application.Interfaces;
+﻿using Application.Common.Interfaces;
+using Application.Common.Models;
 using Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Activities
 {
@@ -20,24 +14,24 @@ namespace Application.Activities
         }
         public class Handler : IRequestHandler<Command, Result<Unit>>
         {
-            private readonly DataContext _context;
-            private readonly IUserAccessor _userAccessor;
+            private readonly IApplicationDbContext _context;
+            private readonly ICurrentUserService _currentUserService;
 
-            public Handler(DataContext context, IUserAccessor userAccessor)
+            public Handler(IApplicationDbContext context, ICurrentUserService currentUserService)
             {
                 _context = context;
-                _userAccessor = userAccessor;
+                _currentUserService = currentUserService;
             }
             public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
             {
                 var activity = await _context.Activities
                     .Include(activity => activity.Attendees).ThenInclude(attendece => attendece.AppUser)
-                    .FirstOrDefaultAsync(a => a.Id == request.Id);
+                    .FirstOrDefaultAsync(a => a.Id == request.Id, cancellationToken);
 
                 if (activity == null) return null;
 
-                var currentUserName = _userAccessor.GetUserName();
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == currentUserName);
+                var currentUserName = _currentUserService.UserId;
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == currentUserName, cancellationToken);
 
                 if (user == null) return null;
 
@@ -68,7 +62,7 @@ namespace Application.Activities
                     activity.Attendees.Add(attendee);
                 }
 
-                var result = await _context.SaveChangesAsync();
+                var result = await _context.SaveChangesAsync(cancellationToken);
 
                 return result > 0 ? Result<Unit>.Success(Unit.Value) : Result<Unit>.Failure("Error updating attendance.");
 

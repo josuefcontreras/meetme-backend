@@ -1,11 +1,6 @@
-﻿using Application.Core;
+﻿using Application.Common.Interfaces;
+using Application.Common.Models;
 using MediatR;
-using Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Activities
 {
@@ -18,9 +13,9 @@ namespace Application.Activities
 
         public class Handler : IRequestHandler<Command, Result<Unit>>
         {
-            private readonly DataContext _context;
-           
-            public Handler(DataContext context)
+            private readonly IApplicationDbContext _context;
+
+            public Handler(IApplicationDbContext context)
             {
                 _context = context;
             }
@@ -28,10 +23,10 @@ namespace Application.Activities
             {
                 var activity = await _context.Activities.FindAsync(request.Id);
                 if (activity == null) return null;
-               
-                _context.Remove(activity);
 
-                var writtenEntries = await _context.SaveChangesAsync();
+                _context.Activities.Remove(activity);
+
+                var writtenEntries = await _context.SaveChangesAsync(cancellationToken);
                 if (writtenEntries == 0) return Result<Unit>.Failure("Failed to delete the activity!");
 
                 return Result<Unit>.Success(Unit.Value);

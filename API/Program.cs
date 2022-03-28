@@ -1,17 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Domain;
-using Google.Apis.Auth.OAuth2;
-using Google.Cloud.Storage.V1;
-using Microsoft.AspNetCore.Hosting;
+using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Persistence;
 
 namespace API
 {
@@ -19,22 +9,30 @@ namespace API
     {
         public static async Task Main(string[] args)
         {
-           
+
             var host = CreateHostBuilder(args).Build();
+
             using var scope = host.Services.CreateScope();
+
             var services = scope.ServiceProvider;
+
             try
             {
+                var context = services.GetRequiredService<ApplicationDbContext>();
 
-
-                var context = services.GetRequiredService<DataContext>();
                 var userManager = services.GetRequiredService<UserManager<AppUser>>();
-                context.Database.Migrate();
-                await Seed.SeedData(context, userManager);
+
+                if (context.Database.IsRelational())
+                {
+                    context.Database.Migrate();
+                }
+
+                await ApplicationDbContextSeed.SeedData(context, userManager);
             }
             catch (Exception ex)
             {
                 var logger = services.GetRequiredService<ILogger<Program>>();
+
                 logger.LogError(ex, "An error occured suring migration.");
 
                 throw;

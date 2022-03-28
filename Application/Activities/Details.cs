@@ -1,15 +1,9 @@
-﻿using Application.Core;
+﻿using Application.Common.Interfaces;
+using Application.Common.Models;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Activities
 {
@@ -21,19 +15,24 @@ namespace Application.Activities
         }
         public class Handler : IRequestHandler<Query, Result<ActivityDTO>>
         {
-            private readonly DataContext _context;
+            private readonly IApplicationDbContext _context;
             private readonly IMapper _mapper;
+            private readonly ICurrentUserService _currentUserService;
 
-            public Handler(DataContext context, IMapper mapper)
+            public Handler(IApplicationDbContext context, IMapper mapper, ICurrentUserService currentUserService)
             {
                 _context = context;
                 _mapper = mapper;
+                _currentUserService = currentUserService;
             }
             public async Task<Result<ActivityDTO>> Handle(Query request, CancellationToken cancellationToken)
             {
-                var activity =  await _context.Activities
-                    .ProjectTo<ActivityDTO>(_mapper.ConfigurationProvider)
-                    .FirstOrDefaultAsync(x => x.Id == request.Id);
+                var currentUserName = _currentUserService.UserId;
+                var currentUser = await _context.Users.FirstOrDefaultAsync(user => user.UserName == currentUserName, cancellationToken);
+
+                var activity = await _context.Activities
+                    .ProjectTo<ActivityDTO>(_mapper.ConfigurationProvider, new { currentUserName = currentUser.UserName })
+                    .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
                 return Result<ActivityDTO>.Success(activity);
             }

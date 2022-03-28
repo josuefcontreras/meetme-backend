@@ -1,14 +1,7 @@
-﻿using Application.Core;
-using Application.Interfaces;
-using Domain;
+﻿using Application.Common.Interfaces;
+using Application.Common.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Photos
 {
@@ -21,20 +14,18 @@ namespace Application.Photos
 
         public class Handler : IRequestHandler<Command, Result<Unit>>
         {
-            private readonly DataContext _context;
-            private readonly IUserAccessor _userAccessor;
-            private readonly IPhotoAccessor _photoAccessor;
-            public Handler(DataContext context, IUserAccessor userAccessor, IPhotoAccessor photoAccessor)
+            private readonly IApplicationDbContext _context;
+            private readonly ICurrentUserService _currentUserService;
+            public Handler(IApplicationDbContext context, ICurrentUserService currentUserService)
             {
                 _context = context;
-                _userAccessor = userAccessor;
-                _photoAccessor = photoAccessor;
+                _currentUserService = currentUserService;
             }
             public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
             {
                 var user = await _context.Users
                     .Include(user => user.Photos)
-                    .FirstOrDefaultAsync(user => user.UserName == _userAccessor.GetUserName());
+                    .FirstOrDefaultAsync(user => user.UserName == _currentUserService.UserId);
 
                 if (user == null) return null;
 
@@ -48,7 +39,7 @@ namespace Application.Photos
 
                 photo.IsMain = true;
 
-                var sucess = await _context.SaveChangesAsync() > 0;
+                var sucess = await _context.SaveChangesAsync(cancellationToken) > 0;
 
                 if (sucess) return Result<Unit>.Success(Unit.Value);
 

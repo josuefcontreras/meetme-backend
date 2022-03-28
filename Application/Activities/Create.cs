@@ -1,21 +1,16 @@
-﻿using Application.Core;
-using Application.Interfaces;
+﻿using Application.Common.Interfaces;
+using Application.Common.Models;
 using Domain;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Activities
 {
     public class Create
     {
-        public class Command: IRequest<Result<Unit>>{
+        public class Command : IRequest<Result<Unit>>
+        {
             public Activity Activity { get; set; }
         }
 
@@ -23,39 +18,40 @@ namespace Application.Activities
         {
             public CommandValidator()
             {
-                RuleFor(x => x.Activity).SetValidator(new ActivityValidator());   
+                RuleFor(x => x.Activity).SetValidator(new ActivityValidator());
             }
         }
 
         public class Handler : IRequestHandler<Command, Result<Unit>>
         {
-            private readonly DataContext _context;
-            private readonly IUserAccessor _userAccessor;
+            private readonly IApplicationDbContext _context;
+            private readonly ICurrentUserService _currentUserService;
 
-            public Handler(DataContext context, IUserAccessor userAccessor)
+            public Handler(IApplicationDbContext context, ICurrentUserService currentUserService)
             {
                 _context = context;
-                _userAccessor = userAccessor;
+                _currentUserService = currentUserService;
             }
-            public async Task<Result<Unit>>Handle(Command request, CancellationToken cancellationToken)
+            public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
             {
-                var currentUserName = _userAccessor.GetUserName();
-                
-                var user = await _context.Users.FirstOrDefaultAsync(user => user.UserName == currentUserName);
+                var currentUserName = _currentUserService.UserId;
 
-                var attendee = new ActivityAttendee {
+                var user = await _context.Users.FirstOrDefaultAsync(user => user.UserName == currentUserName, cancellationToken);
+
+                var attendee = new ActivityAttendee
+                {
                     AppUserId = user.Id,
                     AppUser = user,
                     ActivityId = request.Activity.Id,
                     Activity = request.Activity,
-                    IsHost = true   
+                    IsHost = true
                 };
-                
+
                 request.Activity.Attendees.Add(attendee);
 
                 _context.Activities.Add(request.Activity);
-                
-                var writtenEntries = await _context.SaveChangesAsync();
+
+                var writtenEntries = await _context.SaveChangesAsync(cancellationToken);
 
                 if (writtenEntries == 0) return Result<Unit>.Failure("Failed to create activity!");
 

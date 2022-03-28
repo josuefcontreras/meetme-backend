@@ -1,15 +1,9 @@
-﻿using Application.Core;
-using Application.Interfaces;
+﻿using Application.Common.Interfaces;
+using Application.Common.Models;
 using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Photos
 {
@@ -22,37 +16,38 @@ namespace Application.Photos
 
         public class Handler : IRequestHandler<Command, Result<Photo>>
         {
-            private readonly DataContext _context;
+            private readonly IApplicationDbContext _context;
             private readonly IPhotoAccessor _photoAccessor;
-            private readonly IUserAccessor _userAccessor;
+            private readonly ICurrentUserService _currentUserService;
 
-            public Handler(DataContext context, IPhotoAccessor photoAccessor, IUserAccessor userAccessor)
+            public Handler(IApplicationDbContext context, IPhotoAccessor photoAccessor, ICurrentUserService currentUserService)
             {
                 _context = context;
                 _photoAccessor = photoAccessor;
-                _userAccessor = userAccessor;
+                _currentUserService = currentUserService;
             }
             public async Task<Result<Photo>> Handle(Command request, CancellationToken cancellationToken)
             {
                 var user = await _context.Users
                     .Include(user => user.Photos)
-                    .FirstOrDefaultAsync(user => user.UserName == _userAccessor.GetUserName());
+                    .FirstOrDefaultAsync(user => user.UserName == _currentUserService.UserId);
 
                 if (user == null) return null;
 
                 var photoUploadResult = await _photoAccessor.AddPhoto(request.File);
 
-                var photo = new Photo { 
-                    Id = photoUploadResult.PublicId, 
+                var photo = new Photo
+                {
+                    Id = photoUploadResult.PublicId,
                     Url = photoUploadResult.Url,
-                    IsMain = !user.Photos.Any(p => p.IsMain) ? true: false,
+                    IsMain = !user.Photos.Any(p => p.IsMain) ? true : false,
                 };
 
                 user.Photos.Add(photo);
 
-                var result = await _context.SaveChangesAsync() > 0;
+                var result = await _context.SaveChangesAsync(cancellationToken) > 0;
 
-                if(result) return Result<Photo>.Success(photo);
+                if (result) return Result<Photo>.Success(photo);
 
                 return Result<Photo>.Failure("Problem adding photo to DB.");
 

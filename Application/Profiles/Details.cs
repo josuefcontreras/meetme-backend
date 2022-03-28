@@ -1,15 +1,9 @@
-﻿using Application.Core;
-using Application.Interfaces;
+﻿using Application.Common.Interfaces;
+using Application.Common.Models;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Profiles
 {
@@ -22,22 +16,24 @@ namespace Application.Profiles
 
         public class Handler : IRequestHandler<Query, Result<Profile>>
         {
-            private readonly DataContext _context;
-            private readonly IUserAccessor _userAccessor;
+            private readonly IApplicationDbContext _context;
+            private readonly ICurrentUserService _currentUserService;
             private readonly IMapper _mapper;
-            private readonly IPhotoAccessor _photoAccessor;
 
-            public Handler(DataContext context, IUserAccessor userAccessor, IMapper mapper)
+            public Handler(IApplicationDbContext context, ICurrentUserService currentUserService, IMapper mapper)
             {
                 _context = context;
-                _userAccessor = userAccessor;
+                _currentUserService = currentUserService;
                 _mapper = mapper;
             }
 
             public async Task<Result<Profile>> Handle(Query request, CancellationToken cancellationToken)
             {
+                var currentUserName = _currentUserService.UserId;
+                var currentUser = await _context.Users.FirstOrDefaultAsync(user => user.UserName == currentUserName);
+
                 var user = await _context.Users
-                    .ProjectTo<Profile>(_mapper.ConfigurationProvider)
+                    .ProjectTo<Profile>(_mapper.ConfigurationProvider, new { currentUserName = currentUser.UserName })
                     .FirstOrDefaultAsync(user => user.UserName == request.UserName);
 
                 return Result<Profile>.Success(user);

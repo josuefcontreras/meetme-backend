@@ -1,6 +1,6 @@
 ﻿using API.DTOs;
-using API.Services;
 using Domain;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,12 +11,12 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AccountController: ControllerBase
+    public class AccountController : ControllerBase
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _singInManager;
         private readonly TokenService _tokenService;
-       
+
         public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> singInManager, TokenService tokenService)
         {
             this._userManager = userManager;
@@ -30,7 +30,7 @@ namespace API.Controllers
             var user = await _userManager.Users
                 .Include(user => user.Photos)
                 .FirstOrDefaultAsync(user => user.Email == loginDTO.Email);
-                        
+
             if (user == null) return Unauthorized();
 
             var result = await _singInManager.CheckPasswordSignInAsync(user, loginDTO.Password, false);
@@ -46,9 +46,9 @@ namespace API.Controllers
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<ActionResult<UserDTO>> Register (RegisterDTO registerDTO)
+        public async Task<ActionResult<UserDTO>> Register(RegisterDTO registerDTO)
         {
-            if(await _userManager.Users.AnyAsync(user => user.Email == registerDTO.Email))
+            if (await _userManager.Users.AnyAsync(user => user.Email == registerDTO.Email))
             {
                 ModelState.AddModelError("email", "Email taken");
                 return ValidationProblem(ModelState);
@@ -58,10 +58,11 @@ namespace API.Controllers
                 ModelState.AddModelError("username", "Username taken");
                 return ValidationProblem(ModelState);
             }
-            
-            var user = new AppUser { 
-                DisplayName = registerDTO.DisplayName, 
-                Email = registerDTO.Email, 
+
+            var user = new AppUser
+            {
+                DisplayName = registerDTO.DisplayName,
+                Email = registerDTO.Email,
                 UserName = registerDTO.UserName
             };
 
@@ -78,16 +79,16 @@ namespace API.Controllers
             var user = await _userManager.Users
                 .Include(user => user.Photos)
                 .FirstOrDefaultAsync(user => user.Email == User.FindFirstValue(ClaimTypes.Email));
-            
+
             return Ok(CreateUserDTO(user));
         }
-       
+
         private UserDTO CreateUserDTO(AppUser user)
         {
             var userDTO = new UserDTO()
             {
                 DisplayName = user.DisplayName,
-                Token = _tokenService.createToken(user),
+                Token = _tokenService.CreateToken(user),
                 UserName = user.UserName,
                 Image = user?.Photos?.FirstOrDefault(photo => photo.IsMain)?.Url
             };
