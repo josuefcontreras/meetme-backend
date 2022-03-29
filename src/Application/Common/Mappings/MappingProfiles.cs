@@ -35,6 +35,14 @@ namespace Application.Common.Mappings
                 .ForMember(d => d.UserName, o => o.MapFrom(s => s.Author.UserName))
                 .ForMember(d => d.DisplayName, o => o.MapFrom(s => s.Author.DisplayName))
                 .ForMember(d => d.Image, o => o.MapFrom(s => s.Author.Photos.FirstOrDefault(photo => photo.IsMain).Url));
+
+            CreateMap<ActivityAttendee, Profiles.UserActivityDTO>()
+                .ForMember(d => d.Id, o => o.MapFrom(s => s.Activity.Id))
+                .ForMember(d => d.Date, o => o.MapFrom(s => s.Activity.Date))
+                .ForMember(d => d.Title, o => o.MapFrom(s => s.Activity.Title))
+                .ForMember(d => d.Category, o => o.MapFrom(s => s.Activity.Category))
+                .ForMember(d => d.HostUserName, o => o.MapFrom(s =>
+                    s.Activity.Attendees.FirstOrDefault(x => x.IsHost).AppUser.UserName));
         }
 
     }

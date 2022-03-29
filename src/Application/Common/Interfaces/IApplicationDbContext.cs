@@ -1,5 +1,6 @@
 ﻿using Domain;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Application.Common.Interfaces
 {
@@ -12,5 +13,6 @@ namespace Application.Common.Interfaces
         public DbSet<UserFollowing> UserFollowings { get; }
         public DbSet<AppUser> Users { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+        public EntityEntry Entry(object entity);
     }
 }

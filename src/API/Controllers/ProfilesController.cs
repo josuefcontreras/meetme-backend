@@ -16,5 +16,19 @@ namespace API.Controllers
             var result = await Mediator.Send(request);
             return HandleResult(result);
         }
+
+        [HttpPut]
+        public async Task<IActionResult> Edit(Edit.Command command)
+        {
+            return HandleResult(await Mediator.Send(command));
+        }
+
+        [HttpGet("{username}/activities")]
+        public async Task<IActionResult> GetUserActivities(string username, [FromQuery] UserActivitiesParams UAParams)
+        {
+            var request = new ListActivities.Query { UserName = username, Params = UAParams };
+            var result = await Mediator.Send(request);
+            return HandlePagedResult(result);
+        }
     }
 }

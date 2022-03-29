@@ -55,5 +55,9 @@ namespace Infrastructure.Persistence
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             base.OnModelCreating(builder);
         }
+        public override EntityEntry Entry(object entity)
+        {
+            return base.Entry(entity);
+        }
     }
 }
