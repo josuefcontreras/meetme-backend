@@ -19,7 +19,6 @@ namespace Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-
             if (configuration.GetValue<bool>("UseSqlite"))
             {
                 services.AddDbContext<ApplicationDbContext>(options =>
@@ -30,11 +29,8 @@ namespace Infrastructure
             else
             {
                 services.AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlServer(
-                        configuration.GetConnectionString("SqlServerConnection"),
-                        b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+                    options.UseNpgsql(configuration.GetConnectionString("PostgresConnection")));
             }
-
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
             services.AddIdentityCore<AppUser>(options =>
             {
