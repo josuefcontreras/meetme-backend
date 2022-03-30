@@ -34,9 +34,9 @@ namespace Application.Profiles
 
                 query = request.Params.Predicate switch
                 {
-                    "past" => query.Where(a => a.Date <= DateTime.Now),
+                    "past" => query.Where(a => a.Date <= DateTime.UtcNow),
                     "hosting" => query.Where(a => a.HostUserName == request.UserName),
-                    _ => query.Where(a => a.Date >= DateTime.Now)
+                    _ => query.Where(a => a.Date >= DateTime.UtcNow)
                 };
 
                 var activities = await PagedList<UserActivityDTO>.CreateAsync(query, request.Params.PageNumber, request.Params.Pagesize);

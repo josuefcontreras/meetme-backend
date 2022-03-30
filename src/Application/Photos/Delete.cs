@@ -2,6 +2,7 @@
 using Application.Common.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Application.Photos
 {
@@ -16,13 +17,13 @@ namespace Application.Photos
         {
             private readonly IApplicationDbContext _context;
             private readonly ICurrentUserService _currentUserService;
-            private readonly IPhotoAccessor _photoAccessor;
+            private readonly IPhotoService<IPhotoFolder> _photoService;
 
-            public Handler(IApplicationDbContext context, ICurrentUserService currentUserService, IPhotoAccessor photoAccessor)
+            public Handler(IApplicationDbContext context, ICurrentUserService currentUserService, IPhotoService<IPhotoFolder> photoService)
             {
                 _context = context;
                 _currentUserService = currentUserService;
-                _photoAccessor = photoAccessor;
+                _photoService = photoService;
             }
             public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
             {
@@ -38,7 +39,7 @@ namespace Application.Photos
 
                 if (photo.IsMain) return Result<Unit>.Failure("You can not delete your main photo");
 
-                var deleteResult = await _photoAccessor.DeletPhoto(request.Id);
+                var deleteResult = await _photoService.DeletPhoto(photo);
 
                 if (deleteResult == null) Result<Unit>.Failure("Failed to delete photo from storage");
 
@@ -49,8 +50,6 @@ namespace Application.Photos
                 if (result) return Result<Unit>.Success(Unit.Value);
 
                 return Result<Unit>.Failure("Failed to delete photo from database");
-
-                throw new NotImplementedException();
             }
         }
     }

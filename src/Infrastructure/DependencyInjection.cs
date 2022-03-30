@@ -31,6 +31,7 @@ namespace Infrastructure
                 services.AddDbContext<ApplicationDbContext>(options =>
                     options.UseNpgsql(configuration.GetConnectionString("PostgresConnection")));
             }
+
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
             services.AddIdentityCore<AppUser>(options =>
             {
@@ -77,8 +78,8 @@ namespace Infrastructure
             services.AddScoped<TokenService>();
             services.AddTransient<IDateTime, DateTimeService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
-            services.AddScoped<IPhotoAccessor, PhotoAccessor>();
-            services.Configure<GoogleCloudStorageSettings>(configuration.GetRequiredSection("GoogleCloudStorage"));
+            services.AddScoped<IPhotoService<IPhotoFolder>, CloudinaryPhotoService<IPhotoFolder>>();
+            services.Configure<CloudinaryAccountSettings>(configuration.GetRequiredSection("CloudinaryAccountSettings"));
             services.AddSignalR();
 
             return services;

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220329213747_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20220330192144_ModifiedForCloudinary")]
+    partial class ModifiedForCloudinary
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -177,6 +177,9 @@ namespace Infrastructure.Persistence.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("AppUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Folder")
                         .HasColumnType("text");
 
                     b.Property<bool>("IsMain")

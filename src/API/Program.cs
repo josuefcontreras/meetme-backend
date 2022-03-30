@@ -31,7 +31,7 @@ namespace API
                     //time zone. Starting with 6.0, Npgsql maps UTC DateTime to timestamp 
                     //with time zone, and Local/ Unspecified DateTime to timestamp without 
                     //time zone; trying to send a non - UTC DateTime as timestamptz will throw 
-                    //an exception, etc.Npgsql also supports reading and writing DateTimeOffset 
+                    //an exception, etc.Npgsql also supports reading and writing DateTime 
                     //to timestamp with time zone, but only with Offset = 0.Prior to 6.0, timestamp 
                     //with time zone would be converted to a local timestamp when read - see below for 
                     //more details. The precise improvements and breaking changes are detailed in the 6.0 
@@ -41,10 +41,7 @@ namespace API
                     AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
                 }
 
-                if (context.Database.IsRelational())
-                {
-                    context.Database.Migrate();
-                }
+                context.Database.Migrate();
 
                 await ApplicationDbContextSeed.SeedData(context, userManager);
             }

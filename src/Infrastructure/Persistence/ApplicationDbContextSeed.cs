@@ -670,7 +670,7 @@ namespace Infrastructure.Persistence
                             },
                         }
                     },
-                                        new Activity
+                    new Activity
                     {
                         Title = "Past Activity 1",
                         Date = DateTime.Now.AddMonths(-2),

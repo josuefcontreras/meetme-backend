@@ -4,6 +4,7 @@ using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Application.Photos
 {
@@ -17,14 +18,16 @@ namespace Application.Photos
         public class Handler : IRequestHandler<Command, Result<Photo>>
         {
             private readonly IApplicationDbContext _context;
-            private readonly IPhotoAccessor _photoAccessor;
+            private readonly IPhotoService<IPhotoFolder> _profilePhotoService;
             private readonly ICurrentUserService _currentUserService;
+            private readonly IPhotoFolder _profilePhotoFolder;
 
-            public Handler(IApplicationDbContext context, IPhotoAccessor photoAccessor, ICurrentUserService currentUserService)
+            public Handler(IApplicationDbContext context, IPhotoService<IPhotoFolder> profilePhotoService, ICurrentUserService currentUserService, IOptions<FileStorageFolders> options)
             {
                 _context = context;
-                _photoAccessor = photoAccessor;
+                _profilePhotoService = profilePhotoService;
                 _currentUserService = currentUserService;
+                _profilePhotoFolder = new ProfilePhotoFolder { FolderName = options.Value.ProfilePhotoFolderName };
             }
             public async Task<Result<Photo>> Handle(Command request, CancellationToken cancellationToken)
             {
@@ -34,11 +37,12 @@ namespace Application.Photos
 
                 if (user == null) return null;
 
-                var photoUploadResult = await _photoAccessor.AddPhoto(request.File);
+                var photoUploadResult = await _profilePhotoService.AddPhoto(request.File, _profilePhotoFolder);
 
                 var photo = new Photo
                 {
-                    Id = photoUploadResult.PublicId,
+                    Id = photoUploadResult.Id,
+                    Folder = photoUploadResult.Folder,
                     Url = photoUploadResult.Url,
                     IsMain = !user.Photos.Any(p => p.IsMain),
                 };
