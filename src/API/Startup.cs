@@ -26,6 +26,23 @@ namespace API
         {
             app.UseMiddleware<ExceptionMiddleware>();
 
+            app.UseXContentTypeOptions();
+            app.UseReferrerPolicy(configurer => configurer.NoReferrer());
+            app.UseXXssProtection(configurer => configurer.EnabledWithBlockMode());
+            app.UseXfo(configurer => configurer.Deny());
+            app.UseCsp(configurer =>
+            {
+                configurer
+                    .BlockAllMixedContent()
+                    .StyleSources(configurer => configurer.Self().CustomSources("https://fonts.googleapis.com", "https://fonts.gstatic.com"))
+                    .FontSources(configurer => configurer.Self().CustomSources("https://fonts.gstatic.com", "data:"))
+                    .FormActions(configurer => configurer.Self())
+                    .FrameAncestors(configurer => configurer.Self())
+                    .ImageSources(configurer => configurer.Self().CustomSources("https://res.cloudinary.com"))
+                    .ScriptSources(configurer => configurer.Self().CustomSources("sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU="));
+
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseSwagger();
@@ -34,8 +51,10 @@ namespace API
 
             app.UseHttpsRedirection();
 
+            app.UseHsts();
+
             app.UseRouting();
-             
+
             app.UseDefaultFiles();
 
             app.UseStaticFiles();
