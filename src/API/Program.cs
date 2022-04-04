@@ -19,8 +19,6 @@ namespace API
             try
             {
                 var context = services.GetRequiredService<ApplicationDbContext>();
-
-
                 var userManager = services.GetRequiredService<UserManager<AppUser>>();
 
                 if (context.Database.IsNpgsql())
@@ -63,8 +61,6 @@ namespace API
                 {
                     webBuilder.UseStartup<Startup>();
                 });
-
-
     }
 
 }

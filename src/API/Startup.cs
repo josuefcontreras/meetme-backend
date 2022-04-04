@@ -25,7 +25,6 @@ namespace API
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseMiddleware<ExceptionMiddleware>();
-
             app.UseXContentTypeOptions();
             app.UseReferrerPolicy(configurer => configurer.NoReferrer());
             app.UseXXssProtection(configurer => configurer.EnabledWithBlockMode());
