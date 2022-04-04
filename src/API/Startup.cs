@@ -37,7 +37,7 @@ namespace API
                     .FontSources(configurer => configurer.Self().CustomSources("https://fonts.gstatic.com", "data:"))
                     .FormActions(configurer => configurer.Self())
                     .FrameAncestors(configurer => configurer.Self())
-                    .ImageSources(configurer => configurer.Self().CustomSources("https://res.cloudinary.com"))
+                    .ImageSources(configurer => configurer.Self().CustomSources("blob:", "https://res.cloudinary.com"))
                     .ScriptSources(configurer => configurer.Self().CustomSources("sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU="));
 
             });
